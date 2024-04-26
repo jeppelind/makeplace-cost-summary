@@ -1,5 +1,7 @@
-import { DataCenter } from "./types";
-import PricesSection from './client-prices'
+import { promises as fs } from 'fs';
+import { DataCenter, ItemId } from "./types";
+import { Provider } from "jotai";
+import FileUploader from "./components/file-uploader";
 
 const getDataCenters = async () => {
   console.log('fetching data')
@@ -20,10 +22,16 @@ const getDataCenters = async () => {
 
 export default async function Home() {
   const dataCenters = await getDataCenters();
+  const itemIdsFile = await fs.readFile(`${process.cwd()}/itemIds.json`, 'utf-8');
+  const itemIds: ItemId[] = JSON.parse(itemIdsFile);
+
   return (
     <main className="flex flex-col items-center p-24">
       <h2>{dataCenters.length}</h2>
-      <PricesSection dataCenters={dataCenters} />
+      <Provider>
+        {/* <PricesSection dataCenters={dataCenters} /> */}
+        <FileUploader dataCentersFromServer={dataCenters} itemIdsFromServer={itemIds} />
+      </Provider>
     </main>
   );
 }

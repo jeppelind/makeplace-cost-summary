@@ -3,3 +3,8 @@ export type DataCenter = {
   region: string,
   worlds: number[],
 }
+
+export type ItemId = {
+  id: number,
+  en: string,
+}
