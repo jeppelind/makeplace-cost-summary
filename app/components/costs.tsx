@@ -2,8 +2,10 @@
 
 import { useAtomValue, useSetAtom } from "jotai";
 import { priceListAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
-import { Suspense, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MakePlaceItem, PriceListItem } from "../lib/types";
+import InfoBox from "./info-box";
+import Loader from "./loader";
 
 type ResponseItem = {
   [key: string]: {
@@ -33,14 +35,56 @@ const TotalCost = () => {
   }, 0);
 
   return (
-    <>
-      <p>{`Total cost: ${formatDisplayCost(totalCost)}`}</p>
-    </>
+    <div>
+      <label className="tracking-wider">Total cost</label>
+      <h1 className="text-3xl font-bold text-center text-green-600">{formatDisplayCost(totalCost)}</h1>
+    </div>
+  );
+}
+
+const ItemCount = () => {
+  const priceList = useAtomValue(priceListAtom);
+  const itemCount = priceList.reduce((acc, curr) => acc + curr.units.length, 0);
+
+  return (
+    <div>
+      <label className="tracking-wider">Item count</label>
+      <h1 className="text-3xl font-bold text-center">{itemCount}</h1>
+    </div>
   );
 }
 
 const PerItemCost = () => {
   const priceList = useAtomValue(priceListAtom);
+  const [sortedData, setSortedData] = useState([...priceList]);
+  const [sorting, setSorting] = useState({ field: 'cost', asc: false });
+  let sortingRef = useRef({ field: '', asc: false });
+
+  useEffect(() => {
+    // Sort data
+    if (JSON.stringify(sortingRef.current) !== JSON.stringify(sorting)) {
+      sortingRef.current = { ...sorting };
+      const newSortedData = [...sortedData];
+      if (sorting.field === 'name') {
+        newSortedData.sort((a, b) => {
+          if (a.name < b.name) {
+            return -1;
+          }
+          if (a.name > b.name) {
+            return 1;
+          }
+          return 0;
+        })
+      } else {
+        newSortedData.sort((a, b) => {
+          const costA = a.units.reduce((arr, curr) => arr + curr.pricePerUnit, 0);
+          const costB = b.units.reduce((arr, curr) => arr + curr.pricePerUnit, 0);
+          return costA - costB;
+        });
+      }
+      setSortedData((sorting.asc) ? newSortedData : newSortedData.reverse());
+    }
+  }, [sortedData, sorting]);
 
   if (priceList.length === 0) {
     return null;
@@ -50,46 +94,36 @@ const PerItemCost = () => {
     <table className="table-auto">
       <thead>
         <tr>
-          <th className="text-left">Name</th>
-          <th className="text-right">Cost</th>
+          <th className="text-left tracking-wider hover:text-slate-300 hover:cursor-pointer" onClick={() => setSorting({ field: 'name', asc: !sorting.asc })}>Name</th>
+          <th className="text-right tracking-wider hover:text-slate-300 hover:cursor-pointer" onClick={() => setSorting({ field: 'cost', asc: !sorting.asc })}>Cost</th>
         </tr>
       </thead>
       <tbody>
         {
-          priceList.map((item) => {
+          sortedData.map((item) => {
             const totalCost = item.units.reduce((arr, curr) => arr + curr.pricePerUnit, 0);
             return (
-              <tr key={item.id} className="hover:text-slate-300">
+              <tr key={item.id} className="[&>*:nth-child(1)]:hover:text-slate-300 [&>*:nth-child(2)]:hover:text-green-600">
                 <td className="pt-3">
                   <div>
                     <div className="text-lg font-medium">{`${item.name}`}</div>
                     {
                       item.units.map((unit, idx) => (
-                        <div key={idx} className="flex justify-between text-slate-500 text-sm">
-                          <div>{unit.worldName}</div>
-                          <div className="pr-2">{formatDisplayCost(unit.pricePerUnit)}</div>
+                        <div key={idx} className="flex justify-between text-sm">
+                          <div className="text-slate-500">{unit.worldName}</div>
+                          <div className="pr-2 text-green-800">{formatDisplayCost(unit.pricePerUnit)}</div>
                         </div>
                       ))
                     }
                   </div>
                 </td>
-                <td className="pl-10 pt-3 text-right text-lg font-semibold align-top">{formatDisplayCost(totalCost)}</td>
+                <td className="pl-10 pt-3 text-right text-lg font-semibold align-top text-green-700">{formatDisplayCost(totalCost)}</td>
               </tr>
             )
           })
         }
       </tbody>
     </table>
-  )
-}
-
-const InfoBox = ({children}: Readonly<{
-  children: React.ReactNode;
-}>) => {
-  return (
-    <div className="bg-slate-950 p-8 rounded-3xl h-fit">
-      {children}
-    </div>
   )
 }
 
@@ -101,13 +135,18 @@ const CostSummary = () => {
   }
 
   return (
-    <div className="flex flex-row space-x-6">
+    <div className="flex flex-row space-x-6 pb-28">
       <InfoBox>
         <PerItemCost />
       </InfoBox>
-      <InfoBox>
-        <TotalCost />
-      </InfoBox>
+      <div className="space-y-6">
+        <InfoBox>
+          <TotalCost />
+        </InfoBox>
+        <InfoBox>
+          <ItemCount />
+        </InfoBox>
+      </div>
     </div>
   )
 }
@@ -119,7 +158,7 @@ const Costs = () => {
   const itemIds = useAtomValue(itemIdsAtom);
   const [isFetching, setIsFetching] = useState(false);
 
-  const buildURL = (itemList: MakePlaceItem[]) => {
+  const buildURL = useCallback((itemList: MakePlaceItem[]) => {
     let maxItemCount = 0;
     let url = 'https://universalis.app/api/v2/';
     url += `${selectedCenter.toLocaleLowerCase()}/`;
@@ -137,7 +176,7 @@ const Costs = () => {
       fields: 'dcName,unresolvedItems,items.listings.pricePerUnit,items.listings.worldName',
     });
     return url;
-  }
+  }, [selectedCenter]);
 
   useEffect(() => {
     // Fetch data for items if makeplace list is populated
@@ -180,16 +219,13 @@ const Costs = () => {
         })
         .finally(() => setIsFetching(false));
     }
-  }, [makePlaceList]);
+  }, [makePlaceList, itemIds, setPriceList, buildURL]);
 
   return (
     <>
-      <div>
-        <p>{`${makePlaceList.length} furniture items in list.`}</p>
-      </div>
       {
         isFetching
-          ? <h1>Loading costs....</h1>
+          ? <Loader />
           : <CostSummary />
       }
     </>

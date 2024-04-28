@@ -3,7 +3,6 @@ import { DataCenter, ItemId } from "./lib/types";
 import { Provider } from "jotai";
 import FileSelecter from "./components/file-selecter";
 import Costs from './components/costs';
-import { Suspense } from 'react';
 
 const getDataCenters = async () => {
   console.log('fetching data')
@@ -28,14 +27,10 @@ export default async function Home() {
   const itemIds: ItemId[] = JSON.parse(itemIdsFile);
 
   return (
-    <main className="container mx-auto flex flex-col items-center p-24">
-      <h2>{dataCenters.length}</h2>
+    <main className="container mx-auto flex flex-col items-center px-24 grow gap-10">
       <Provider>
-        {/* <PricesSection dataCenters={dataCenters} /> */}
         <FileSelecter dataCentersFromServer={dataCenters} itemIdsFromServer={itemIds} />
-        <Suspense fallback={<h1>Loading costs...</h1>}>
-          <Costs />
-        </Suspense>
+        <Costs />
       </Provider>
     </main>
   );

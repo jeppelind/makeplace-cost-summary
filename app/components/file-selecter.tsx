@@ -4,6 +4,8 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { DataCenter, ItemId, MakePlaceItem } from "../lib/types";
 import { useHydrateAtoms } from "jotai/utils";
 import { dataCentersAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
+import Label from "./label";
+import { LuFile, LuFileText } from "react-icons/lu";
 
 type FileSelecterProps = {
   dataCentersFromServer: DataCenter[],
@@ -15,17 +17,20 @@ const DataCenterDropdown = () => {
   const [selectedCenter, setSelectedCenter] = useAtom(selectedCenterAtom);
 
   return (
-    <select name="data center" value={selectedCenter} onChange={(evt) => setSelectedCenter(evt.target.value)}
-      className="p-3 accent-pink-500 bg-slate-300 dark:bg-slate-700 rounded-md">
-      {
-        dataCenters.map((center) => {
-          if (center.worlds.some((id) => id > 1000)) {
-            return null;
-          }
-          return <option key={center.name} value={center.name}>{center.name}</option>
-        })
-      }
-    </select>
+    <div className="flex flex-col">
+      <Label>Data center</Label>
+      <select name="data center" value={selectedCenter} onChange={(evt) => setSelectedCenter(evt.target.value)}
+        className="p-4 dark:bg-slate-700 hover:text-slate-300 hover:cursor-pointer rounded-md grow">
+        {
+          dataCenters.map((center) => {
+            if (center.worlds.some((id) => id > 1000)) {
+              return null;
+            }
+            return <option key={center.name} value={center.name}>{center.name}</option>
+          })
+        }
+      </select>
+    </div>
   )
 }
 
@@ -70,7 +75,8 @@ const FileInput = () => {
   }
 
   return (
-    <>
+    <div className="flex flex-col">
+      <Label>File</Label>
       <input
         id="makeplace-input"
         className="makeplace-file-input"
@@ -84,8 +90,10 @@ const FileInput = () => {
           }
         }}
       />
-      <label htmlFor="makeplace-input" className="p-3 px-6 bg-slate-300 dark:bg-slate-700 rounded-md">Select a file</label>
-    </>
+      <label htmlFor="makeplace-input" className="flex items-center gap-2 p-4 px-6 dark:bg-slate-700 hover:text-slate-300 rounded-md">
+        <LuFile className="text-xl" />Select a File
+      </label>
+    </div>
   )
 }
 
@@ -97,7 +105,6 @@ const FileSelecter = ({ dataCentersFromServer, itemIdsFromServer }: FileSelecter
 
   return (
     <>
-      <p>Upload</p>
       <div className="flex flex-row gap-2">
         <DataCenterDropdown />
         <FileInput />
