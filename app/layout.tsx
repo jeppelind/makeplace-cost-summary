@@ -24,10 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 min-h-screen`}>
-        <div className="flex flex-col items-center">
-          <h1>Makeplace price calculator</h1>
+        <div className="flex flex-col items-center m-6">
+          <h1 className="text-4xl font-extralight tracking-wide">MakePlace Cost Summary</h1>
         </div>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<h1>Loading...</h1>}>
           {children}
         </Suspense>
       </body>

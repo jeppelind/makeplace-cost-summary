@@ -1,17 +1,11 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { DataCenter } from "./types";
+import { DataCenter } from "./lib/types";
 
 type DataCenterProps = {
   dataCenters: DataCenter[],
 }
-
-// const filo = async (name: string) => {
-//   console.log(`get ${name}`);
-//   const res = await fetch('Y:/Program/SquareEnix/makeplace-windows/MakePlace/Save/' + name);
-
-// }
 
 const DataCenterDropdown = ({ dataCenters }: DataCenterProps) => {
   const [selectedDC, setSelectedDC] = useState('');

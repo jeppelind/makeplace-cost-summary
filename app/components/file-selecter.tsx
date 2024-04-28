@@ -1,26 +1,14 @@
 'use client'
 
-import { atom, useAtom, useAtomValue } from "jotai";
-import { DataCenter, ItemId } from "../types";
-import { atomWithStorage, useHydrateAtoms } from "jotai/utils";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { DataCenter, ItemId, MakePlaceItem } from "../lib/types";
+import { useHydrateAtoms } from "jotai/utils";
+import { dataCentersAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
 
-type FileUploaderProps = {
+type FileSelecterProps = {
   dataCentersFromServer: DataCenter[],
   itemIdsFromServer: ItemId[],
 }
-
-type MakePlaceList = {
-  maxCount: number,
-  furniture: {
-    id: number,
-    name: string,
-    count: number
-  }[],
-}
-
-const dataCentersAtom = atom([] as DataCenter[]);
-const selectedCenterAtom = atomWithStorage('dataCenter', '');
-const itemIdsAtom = atom([] as ItemId[]);
 
 const DataCenterDropdown = () => {
   const dataCenters = useAtomValue(dataCentersAtom);
@@ -43,9 +31,10 @@ const DataCenterDropdown = () => {
 
 const FileInput = () => {
   const itemIds = useAtomValue(itemIdsAtom);
+  const setMakePlaceList = useSetAtom(makePlaceListAtom);
 
   const parseFurnitureFromText = (text: string) => {
-    const result: MakePlaceList = { maxCount: 0, furniture: [] };
+    const result: MakePlaceItem[] = [];
     const lines = text.split(/[\r\n]+/g);
   
     for (let i = 0; i < lines.length; i++) {
@@ -55,10 +44,7 @@ const FileInput = () => {
         const count = parseInt(values[1]);
         const item = itemIds.find((item) => item.en === values[0]);
         if (item) {
-          result.furniture.push({ count, id: item.id, name: values[0] });
-          if (count > result.maxCount) {
-            result.maxCount = count;
-          }
+          result.push({ count, id: item.id, name: values[0] });
         }
       }
       else if (line.includes('  Dyes  ')) { // End when reaching "Dyes"
@@ -77,6 +63,7 @@ const FileInput = () => {
         if (reader.result) {
           const parsedList = parseFurnitureFromText(reader.result as string);
           console.dir(parsedList)
+          setMakePlaceList(parsedList);
         }
       }
     }
@@ -91,7 +78,6 @@ const FileInput = () => {
         name="makeplace file"
         accept=".list.txt"
         onChange={(evt) => {
-          console.log('MEPP')
           if (evt.target.files) {
             readFiles(evt.target.files);
             evt.target.value = '';
@@ -103,7 +89,7 @@ const FileInput = () => {
   )
 }
 
-const FileUploader = ({ dataCentersFromServer, itemIdsFromServer }: FileUploaderProps) => {
+const FileSelecter = ({ dataCentersFromServer, itemIdsFromServer }: FileSelecterProps) => {
   useHydrateAtoms([
     [dataCentersAtom, dataCentersFromServer],
     [itemIdsAtom, itemIdsFromServer],
@@ -120,4 +106,4 @@ const FileUploader = ({ dataCentersFromServer, itemIdsFromServer }: FileUploader
   );
 }
 
-export default FileUploader;
+export default FileSelecter;
