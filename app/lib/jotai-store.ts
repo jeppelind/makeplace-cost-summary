@@ -12,3 +12,5 @@ export const itemIdsAtom = atom([] as ItemId[]);
 export const makePlaceListAtom = atom([] as MakePlaceItem[]);
 
 export const priceListAtom = atom([] as PriceListItem[]);
+
+export const unresolvedItemsAtom = atom([] as string[]);

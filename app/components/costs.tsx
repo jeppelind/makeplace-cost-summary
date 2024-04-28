@@ -1,11 +1,12 @@
 'use client'
 
 import { useAtomValue, useSetAtom } from "jotai";
-import { priceListAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
+import { priceListAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom, unresolvedItemsAtom } from "../lib/jotai-store";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MakePlaceItem, PriceListItem } from "../lib/types";
 import InfoBox from "./info-box";
 import Loader from "./loader";
+import { FaSort } from "react-icons/fa";
 
 type ResponseItem = {
   [key: string]: {
@@ -35,10 +36,10 @@ const TotalCost = () => {
   }, 0);
 
   return (
-    <div>
+    <InfoBox>
       <label className="tracking-wider">Total cost</label>
-      <h1 className="text-3xl font-bold text-center text-green-600">{formatDisplayCost(totalCost)}</h1>
-    </div>
+      <h1 className="text-3xl font-extrabold text-center text-green-600">{formatDisplayCost(totalCost)}</h1>
+    </InfoBox>
   );
 }
 
@@ -47,10 +48,36 @@ const ItemCount = () => {
   const itemCount = priceList.reduce((acc, curr) => acc + curr.units.length, 0);
 
   return (
-    <div>
+    <InfoBox>
       <label className="tracking-wider">Item count</label>
-      <h1 className="text-3xl font-bold text-center">{itemCount}</h1>
-    </div>
+      <h1 className="text-3xl font-extrabold text-center">{itemCount}</h1>
+    </InfoBox>
+  );
+}
+
+const UnresolvedItems = () => {
+  const unresolvedItems = useAtomValue(unresolvedItemsAtom);
+  const itemIds = useAtomValue(itemIdsAtom);
+
+  const getItemNameById = (id: string) => {
+    const itemId = id.toString();
+    const itemInfo = itemIds.find((item) => item.id === itemId);
+    return (itemInfo) ? itemInfo.en : id;
+  }
+
+  if (unresolvedItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <InfoBox>
+      <label className="tracking-wider">Unresolved items</label>
+      <ul className="pt-2">
+      {
+        unresolvedItems.map((item) => <li key={item} className="font-semibold text-lg">{getItemNameById(item)}</li>)
+      }
+      </ul>
+    </InfoBox>
   );
 }
 
@@ -91,39 +118,50 @@ const PerItemCost = () => {
   }
 
   return (
-    <table className="table-auto">
-      <thead>
-        <tr>
-          <th className="text-left tracking-wider hover:text-slate-300 hover:cursor-pointer" onClick={() => setSorting({ field: 'name', asc: !sorting.asc })}>Name</th>
-          <th className="text-right tracking-wider hover:text-slate-300 hover:cursor-pointer" onClick={() => setSorting({ field: 'cost', asc: !sorting.asc })}>Cost</th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          sortedData.map((item) => {
-            const totalCost = item.units.reduce((arr, curr) => arr + curr.pricePerUnit, 0);
-            return (
-              <tr key={item.id} className="[&>*:nth-child(1)]:hover:text-slate-300 [&>*:nth-child(2)]:hover:text-green-600">
-                <td className="pt-3">
-                  <div>
-                    <div className="text-lg font-medium">{`${item.name}`}</div>
-                    {
-                      item.units.map((unit, idx) => (
-                        <div key={idx} className="flex justify-between text-sm">
-                          <div className="text-slate-500">{unit.worldName}</div>
-                          <div className="pr-2 text-green-800">{formatDisplayCost(unit.pricePerUnit)}</div>
-                        </div>
-                      ))
-                    }
-                  </div>
-                </td>
-                <td className="pl-10 pt-3 text-right text-lg font-semibold align-top text-green-700">{formatDisplayCost(totalCost)}</td>
-              </tr>
-            )
-          })
-        }
-      </tbody>
-    </table>
+    <>
+      <label className="tracking-wider">Items & costs</label>
+      <table className="table-auto mt-4">
+        <thead>
+          <tr>
+            <th className="text-left tracking-wider hover:text-slate-300 hover:cursor-pointer" onClick={() => setSorting({ field: 'name', asc: !sorting.asc })}>
+              <div className="flex items-center">
+                <FaSort />Name
+              </div>
+            </th>
+            <th className="text-right tracking-wider hover:text-slate-300 hover:cursor-pointer" onClick={() => setSorting({ field: 'cost', asc: !sorting.asc })}>
+              <div className="flex justify-end items-center">
+                <FaSort />Cost
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            sortedData.map((item) => {
+              const totalCost = item.units.reduce((arr, curr) => arr + curr.pricePerUnit, 0);
+              return (
+                <tr key={item.id} className="[&>*:nth-child(1)]:hover:text-slate-300 [&>*:nth-child(2)]:hover:text-green-600">
+                  <td className="pt-3">
+                    <div>
+                      <div className="text-lg font-semibold">{`${item.name}`}</div>
+                      {
+                        item.units.map((unit, idx) => (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <div className="text-slate-500">{unit.worldName}</div>
+                            <div className="pr-2 text-green-800">{formatDisplayCost(unit.pricePerUnit)}</div>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </td>
+                  <td className="pl-10 pt-3 text-right text-lg font-bold align-top text-green-700">{formatDisplayCost(totalCost)}</td>
+                </tr>
+              )
+            })
+          }
+        </tbody>
+      </table>
+    </>
   )
 }
 
@@ -140,12 +178,9 @@ const CostSummary = () => {
         <PerItemCost />
       </InfoBox>
       <div className="space-y-6">
-        <InfoBox>
-          <TotalCost />
-        </InfoBox>
-        <InfoBox>
-          <ItemCount />
-        </InfoBox>
+        <TotalCost />
+        <ItemCount />
+        <UnresolvedItems />
       </div>
     </div>
   )
@@ -153,6 +188,7 @@ const CostSummary = () => {
 
 const Costs = () => {
   const setPriceList = useSetAtom(priceListAtom);
+  const setUnresolvedItems = useSetAtom(unresolvedItemsAtom);
   const makePlaceList = useAtomValue(makePlaceListAtom);
   const selectedCenter = useAtomValue(selectedCenterAtom);
   const itemIds = useAtomValue(itemIdsAtom);
@@ -200,7 +236,13 @@ const Costs = () => {
         })
         .then((data: ResponseObject[]) => {
           const combinedData: ResponseItem = {};
-          data.forEach((res) => Object.assign(combinedData, res.items));
+          let unresolvedItems: string[] = [];
+          data.forEach((res) => {
+            Object.assign(combinedData, res.items);
+            if (res.unresolvedItems) {
+              unresolvedItems = [...unresolvedItems, ...res.unresolvedItems];
+            }
+          });
 
           const parsedCosts: PriceListItem[] = [];
           for (const [key, value] of Object.entries(combinedData)) {
@@ -213,13 +255,14 @@ const Costs = () => {
             });
           }
           setPriceList(parsedCosts);
+          setUnresolvedItems(unresolvedItems);
         })
         .catch((err) => {
           console.error(err);
         })
         .finally(() => setIsFetching(false));
     }
-  }, [makePlaceList, itemIds, setPriceList, buildURL]);
+  }, [makePlaceList, itemIds, setPriceList, buildURL, setUnresolvedItems]);
 
   return (
     <>

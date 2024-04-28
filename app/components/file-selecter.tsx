@@ -5,7 +5,7 @@ import { DataCenter, ItemId, MakePlaceItem } from "../lib/types";
 import { useHydrateAtoms } from "jotai/utils";
 import { dataCentersAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
 import Label from "./label";
-import { LuFile, LuFileText } from "react-icons/lu";
+import { LuFileText } from "react-icons/lu";
 
 type FileSelecterProps = {
   dataCentersFromServer: DataCenter[],
@@ -67,7 +67,6 @@ const FileInput = () => {
       reader.onload = () => {
         if (reader.result) {
           const parsedList = parseFurnitureFromText(reader.result as string);
-          console.dir(parsedList)
           setMakePlaceList(parsedList);
         }
       }
@@ -76,7 +75,7 @@ const FileInput = () => {
 
   return (
     <div className="flex flex-col">
-      <Label>File</Label>
+      <Label>MakePlace file</Label>
       <input
         id="makeplace-input"
         className="makeplace-file-input"
@@ -91,7 +90,7 @@ const FileInput = () => {
         }}
       />
       <label htmlFor="makeplace-input" className="flex items-center gap-2 p-4 px-6 dark:bg-slate-700 hover:text-slate-300 rounded-md">
-        <LuFile className="text-xl" />Select a File
+        <LuFileText className="text-xl" />Select a MakePlace file
       </label>
     </div>
   )
