@@ -22,4 +22,5 @@ export type PriceListItem = {
     pricePerUnit: number,
     worldName: string,
   }[],
+  isHidden: boolean,
 }

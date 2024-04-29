@@ -1,6 +1,6 @@
 'use client'
 
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { priceListAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom, unresolvedItemsAtom } from "../lib/jotai-store";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MakePlaceItem, PriceListItem } from "../lib/types";
@@ -31,7 +31,7 @@ const TotalCost = () => {
   const priceList = useAtomValue(priceListAtom);
 
   const totalCost = priceList.reduce((arr, curr) => {
-    const combinedCostForUnits = curr.units.reduce((arr2, curr2) => arr2 + curr2.pricePerUnit, 0);
+    const combinedCostForUnits = (curr.isHidden) ? 0 : curr.units.reduce((arr2, curr2) => arr2 + curr2.pricePerUnit, 0);
     return arr + combinedCostForUnits;
   }, 0);
 
@@ -45,7 +45,7 @@ const TotalCost = () => {
 
 const ItemCount = () => {
   const priceList = useAtomValue(priceListAtom);
-  const itemCount = priceList.reduce((acc, curr) => acc + curr.units.length, 0);
+  const itemCount = priceList.reduce((acc, curr) => acc + (curr.isHidden ? 0 : curr.units.length), 0);
 
   return (
     <InfoBox>
@@ -74,7 +74,7 @@ const UnresolvedItems = () => {
       <label className="tracking-wider">Unresolved items</label>
       <ul className="pt-2">
       {
-        unresolvedItems.map((item) => <li key={item} className="font-semibold text-lg">{getItemNameById(item)}</li>)
+        unresolvedItems.map((item) => <li key={item} className="font-semibold text-lg truncate max-w-72">{getItemNameById(item)}</li>)
       }
       </ul>
     </InfoBox>
@@ -82,10 +82,19 @@ const UnresolvedItems = () => {
 }
 
 const PerItemCost = () => {
-  const priceList = useAtomValue(priceListAtom);
+  const [priceList, setPriceList] = useAtom(priceListAtom);
   const [sortedData, setSortedData] = useState([...priceList]);
   const [sorting, setSorting] = useState({ field: 'cost', asc: false });
   let sortingRef = useRef({ field: '', asc: false });
+
+  const toggleHidden = (id: string) => {
+    const priceListCopy = [...priceList];
+    const item = priceListCopy.find((item) => item.id === id);
+    if (item) {
+      item.isHidden = !item.isHidden;
+      setPriceList([...priceListCopy]);
+    }
+  }
 
   useEffect(() => {
     // Sort data
@@ -138,15 +147,20 @@ const PerItemCost = () => {
         <tbody>
           {
             sortedData.map((item) => {
+              const textDecoration = (item.isHidden) ? 'line-through opacity-60' : '';
               const totalCost = item.units.reduce((arr, curr) => arr + curr.pricePerUnit, 0);
               return (
-                <tr key={item.id} className="[&>*:nth-child(1)]:hover:text-slate-300 [&>*:nth-child(2)]:hover:text-green-600">
+                <tr
+                  key={item.id}
+                  className="hover:cursor-pointer [&>*:nth-child(1)]:hover:text-slate-300 [&>*:nth-child(2)]:hover:text-green-600"
+                  onClick={() => toggleHidden(item.id)}
+                >
                   <td className="pt-3">
                     <div>
-                      <div className="text-lg font-semibold">{`${item.name}`}</div>
+                      <div className={`text-lg font-semibold ${textDecoration}`}>{`${item.name}`}</div>
                       {
                         item.units.map((unit, idx) => (
-                          <div key={idx} className="flex justify-between text-sm">
+                          <div key={idx} className={`flex justify-between text-sm ${textDecoration}`}>
                             <div className="text-slate-500">{unit.worldName}</div>
                             <div className="pr-2 text-green-800">{formatDisplayCost(unit.pricePerUnit)}</div>
                           </div>
@@ -154,7 +168,7 @@ const PerItemCost = () => {
                       }
                     </div>
                   </td>
-                  <td className="pl-10 pt-3 text-right text-lg font-bold align-top text-green-700">{formatDisplayCost(totalCost)}</td>
+                  <td className={`pl-10 pt-3 text-right text-lg font-bold align-top text-green-700 ${textDecoration}`}>{formatDisplayCost(totalCost)}</td>
                 </tr>
               )
             })
@@ -252,6 +266,7 @@ const Costs = () => {
               id: key,
               name: itemInfo?.en || 'Unknown',
               units: value.listings.slice(0, makePlaceInfo?.count),
+              isHidden: false,
             });
           }
           setPriceList(parsedCosts);

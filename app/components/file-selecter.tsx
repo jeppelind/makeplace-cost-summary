@@ -103,12 +103,17 @@ const FileSelecter = ({ dataCentersFromServer, itemIdsFromServer }: FileSelecter
   ]);
 
   return (
-    <>
-      <div className="flex flex-row gap-2">
+    <div>
+      <div className="flex flex-row justify-center gap-2">
         <DataCenterDropdown />
         <FileInput />
       </div>
-    </>
+      <p className="text-sm text-slate-500 pt-4">
+        <span className="font-bold">Instructions:</span> Select a MakePlace save (located in the folder ../MakePlace/Save/ by default).<br />
+        Once the items are loaded below you can toggle whether they should be included in the total cost by clicking on them.<br />
+        Problems? Blame Totono.
+      </p>
+    </div>
   );
 }
 
