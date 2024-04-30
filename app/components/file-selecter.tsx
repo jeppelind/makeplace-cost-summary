@@ -6,6 +6,7 @@ import { useHydrateAtoms } from "jotai/utils";
 import { dataCentersAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
 import Label from "./label";
 import { LuFileText } from "react-icons/lu";
+import { useRef } from "react";
 
 type FileSelecterProps = {
   dataCentersFromServer: DataCenter[],
@@ -15,6 +16,7 @@ type FileSelecterProps = {
 const DataCenterDropdown = () => {
   const dataCenters = useAtomValue(dataCentersAtom);
   const [selectedCenter, setSelectedCenter] = useAtom(selectedCenterAtom);
+  const validDataCenters = useRef(dataCenters.filter((center) => !center.worlds.some((id) => id > 1000)));
 
   return (
     <div className="flex flex-col">
@@ -22,10 +24,7 @@ const DataCenterDropdown = () => {
       <select name="data center" value={selectedCenter} onChange={(evt) => setSelectedCenter(evt.target.value)}
         className="p-4 dark:bg-slate-700 hover:text-slate-300 hover:cursor-pointer rounded-md grow">
         {
-          dataCenters.map((center) => {
-            if (center.worlds.some((id) => id > 1000)) {
-              return null;
-            }
+          validDataCenters.current.map((center) => {
             return <option key={center.name} value={center.name}>{center.name}</option>
           })
         }

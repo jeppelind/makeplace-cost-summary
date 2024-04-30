@@ -5,7 +5,6 @@ import FileSelecter from "./components/file-selecter";
 import Costs from './components/costs';
 
 const getDataCenters = async () => {
-  console.log('fetching data')
   const URL = 'https://universalis.app/api/v2/data-centers';
   try {
     const res = await fetch(URL, { next: { revalidate: 604800 } });
@@ -13,7 +12,6 @@ const getDataCenters = async () => {
       throw new Error(`Error fetching data. ${res.statusText}`);
     }
     const data: DataCenter[] = await res.json();
-    console.log('got data')
     return data;
   } catch (err) {
     console.error(err);

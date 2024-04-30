@@ -5,7 +5,7 @@ import { DataCenter, ItemId, MakePlaceItem, PriceListItem } from "./types";
 
 export const dataCentersAtom = atom([] as DataCenter[]);
 
-export const selectedCenterAtom = atomWithStorage('dataCenter', '');
+export const selectedCenterAtom = atomWithStorage('dataCenter', 'Elemental');
 
 export const itemIdsAtom = atom([] as ItemId[]);
 
