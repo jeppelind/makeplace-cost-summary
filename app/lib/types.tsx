@@ -22,5 +22,8 @@ export type PriceListItem = {
     pricePerUnit: number,
     worldName: string,
   }[],
-  isHidden: boolean,
+}
+
+export type HiddenItems = {
+  [key: string]: string[],
 }

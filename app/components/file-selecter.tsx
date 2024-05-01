@@ -3,7 +3,7 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { DataCenter, ItemId, MakePlaceItem } from "../lib/types";
 import { useHydrateAtoms } from "jotai/utils";
-import { dataCentersAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
+import { dataCentersAtom, itemIdsAtom, makePlaceFilenameAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
 import Label from "./label";
 import { LuFileText } from "react-icons/lu";
 import { useRef } from "react";
@@ -36,6 +36,7 @@ const DataCenterDropdown = () => {
 const FileInput = () => {
   const itemIds = useAtomValue(itemIdsAtom);
   const setMakePlaceList = useSetAtom(makePlaceListAtom);
+  const setMakePlaceFilename = useSetAtom(makePlaceFilenameAtom);
 
   const parseFurnitureFromText = (text: string) => {
     const result: MakePlaceItem[] = [];
@@ -67,6 +68,7 @@ const FileInput = () => {
         if (reader.result) {
           const parsedList = parseFurnitureFromText(reader.result as string);
           setMakePlaceList(parsedList);
+          setMakePlaceFilename(file.name);
         }
       }
     }
@@ -108,7 +110,7 @@ const FileSelecter = ({ dataCentersFromServer, itemIdsFromServer }: FileSelecter
         <FileInput />
       </div>
       <p className="text-sm text-slate-500 pt-4">
-        <span className="font-bold">Instructions:</span> Select a MakePlace save (located in the folder ../MakePlace/Save/ by default).<br />
+        <span className="font-bold">Instructions:</span> Select a MakePlace save file (located in the folder &quot;../MakePlace/Save/&quot; by default).<br />
         Once the items are loaded below you can toggle whether they should be included in the total cost by clicking on them.<br />
         Problems? Blame Totono.
       </p>

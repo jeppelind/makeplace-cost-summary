@@ -1,7 +1,7 @@
 'use client'
 
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { priceListAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom, unresolvedItemsAtom } from "../lib/jotai-store";
+import { priceListAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom, unresolvedItemsAtom, makePlaceFilenameAtom, hiddenItemIdsAtom, hiddenItemIdsForFileAtom } from "../lib/jotai-store";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MakePlaceItem, PriceListItem } from "../lib/types";
 import InfoBox from "./info-box";
@@ -29,9 +29,10 @@ const formatDisplayCost = (value: number) => {
 
 const TotalCost = () => {
   const priceList = useAtomValue(priceListAtom);
+  const hiddenIds = useAtomValue(hiddenItemIdsForFileAtom);
 
   const totalCost = priceList.reduce((arr, curr) => {
-    const combinedCostForUnits = (curr.isHidden) ? 0 : curr.units.reduce((arr2, curr2) => arr2 + curr2.pricePerUnit, 0);
+    const combinedCostForUnits = (hiddenIds.includes(curr.id)) ? 0 : curr.units.reduce((arr2, curr2) => arr2 + curr2.pricePerUnit, 0);
     return arr + combinedCostForUnits;
   }, 0);
 
@@ -45,7 +46,8 @@ const TotalCost = () => {
 
 const ItemCount = () => {
   const priceList = useAtomValue(priceListAtom);
-  const itemCount = priceList.reduce((acc, curr) => acc + (curr.isHidden ? 0 : curr.units.length), 0);
+  const hiddenIds = useAtomValue(hiddenItemIdsForFileAtom);
+  const itemCount = priceList.reduce((acc, curr) => acc + (hiddenIds.includes(curr.id) ? 0 : curr.units.length), 0);
 
   return (
     <InfoBox>
@@ -82,19 +84,33 @@ const UnresolvedItems = () => {
 }
 
 const PerItemCost = () => {
-  const [priceList, setPriceList] = useAtom(priceListAtom);
+  const [hiddenItemIds, setHiddenItemIds] = useAtom(hiddenItemIdsAtom);
+  const setHiddenItemIdsForFile = useSetAtom(hiddenItemIdsForFileAtom);
+  const makeplaceFilename = useAtomValue(makePlaceFilenameAtom);
+  const priceList = useAtomValue(priceListAtom);
   const [sortedData, setSortedData] = useState([...priceList]);
   const [sorting, setSorting] = useState({ field: 'cost', asc: false });
-  let sortingRef = useRef({ field: '', asc: false });
+  const [displayHiddenItems, setDisplayHiddenItems] = useState(false);
+  const sortingRef = useRef({ field: '', asc: false });
+  const hiddenIds = hiddenItemIds[makeplaceFilename] || [];
 
   const toggleHidden = (id: string) => {
-    const priceListCopy = [...priceList];
-    const item = priceListCopy.find((item) => item.id === id);
-    if (item) {
-      item.isHidden = !item.isHidden;
-      setPriceList([...priceListCopy]);
+    const hiddenItemIdsCopy = [...hiddenIds]
+    if (hiddenItemIdsCopy.includes(id)) {
+      hiddenItemIdsCopy.splice(hiddenItemIdsCopy.findIndex((hiddenId) => hiddenId === id), 1);
+    } else {
+      hiddenItemIdsCopy.push(id);
     }
+    setHiddenItemIds({...hiddenItemIds, ...{ [makeplaceFilename]: hiddenItemIdsCopy }});
   }
+
+  const unHideAll = () => {
+    setHiddenItemIds({...hiddenItemIds, ...{ [makeplaceFilename]: [] }});
+  }
+
+  useEffect(() => {
+    setHiddenItemIdsForFile(hiddenItemIds[makeplaceFilename] || []);
+  }, [hiddenItemIds, makeplaceFilename, setHiddenItemIdsForFile]);
 
   useEffect(() => {
     // Sort data
@@ -127,9 +143,27 @@ const PerItemCost = () => {
   }
 
   return (
-    <>
+    <div className="md:min-w-96">
       <label className="tracking-wider">Items & costs</label>
-      <table className="table-auto mt-4">
+      <div className="flex justify-between text-sm font-medium pt-3 pb-2 text-slate-500">
+        <label htmlFor="checkbox-show-hidden" className="select-none grid grid-flow-col gap-1 items-center cursor-pointer hover:text-slate-300">
+          <div className="grid items-center justify-center">
+            <input
+              type="checkbox"
+              id="checkbox-show-hidden"
+              defaultChecked={displayHiddenItems}
+              className="peer row-start-1 col-start-1 appearance-none w-4 h-4 border ring-transparent border-slate-600 rounded checked:bg-green-700 checked:border-0 forced-colors:appearance-auto"
+              onChange={(evt) => setDisplayHiddenItems(evt.target.checked)}
+            />
+            <svg viewBox="0 0 14 14" fill="none" className="invisible peer-checked:visible row-start-1 col-start-1 stroke-white dark:text-violet-300 forced-colors:hidden">
+              <path d="M3 8L6 11L11 3.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          Hide deselected
+        </label>
+        <button className="hover:text-slate-300" onClick={() => unHideAll()}>Reset selection</button>
+      </div>
+      <table className="table-auto mt-4 w-full">
         <thead>
           <tr>
             <th className="text-left tracking-wider hover:text-slate-300 hover:cursor-pointer" onClick={() => setSorting({ field: 'name', asc: !sorting.asc })}>
@@ -147,15 +181,18 @@ const PerItemCost = () => {
         <tbody>
           {
             sortedData.map((item) => {
-              const textDecoration = (item.isHidden) ? 'line-through opacity-60' : '';
+              const textDecoration = (hiddenIds.includes(item.id)) ? 'line-through opacity-60' : '';
               const totalCost = item.units.reduce((arr, curr) => arr + curr.pricePerUnit, 0);
+              if(displayHiddenItems && hiddenIds.includes(item.id)) {
+                return null;
+              }
               return (
                 <tr
                   key={item.id}
                   className="hover:cursor-pointer [&>*:nth-child(1)]:hover:text-slate-300 [&>*:nth-child(2)]:hover:text-green-600"
                   onClick={() => toggleHidden(item.id)}
                 >
-                  <td className="pt-3">
+                  <td className="pt-3 w-full">
                     <div>
                       <div className={`text-lg font-semibold ${textDecoration}`}>{`${item.name}`}</div>
                       {
@@ -175,7 +212,7 @@ const PerItemCost = () => {
           }
         </tbody>
       </table>
-    </>
+    </div>
   )
 }
 
@@ -230,7 +267,7 @@ const Costs = () => {
 
   useEffect(() => {
     // Fetch data for items if makeplace list is populated
-    if (makePlaceList.length > 0) { 
+    if (makePlaceList.length > 0) {
       setIsFetching(true);
       const MAX_ITEMS_PER_CALL = 100; // API supports maximum of 100 items per call
       const fetchCount = Math.ceil(makePlaceList.length / MAX_ITEMS_PER_CALL);
@@ -266,7 +303,6 @@ const Costs = () => {
               id: key,
               name: itemInfo?.en || 'Unknown',
               units: value.listings.slice(0, makePlaceInfo?.count),
-              isHidden: false,
             });
           }
           setPriceList(parsedCosts);
