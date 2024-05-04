@@ -1,7 +1,7 @@
 const Label = ({ children }: Readonly<{
   children: React.ReactNode;
 }>) => (
-  <label className="tracking-wider text-sm">
+  <label className="tracking-widest text-xs">
     {children}
   </label>
 );

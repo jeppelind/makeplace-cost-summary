@@ -2,6 +2,7 @@ import { DataCenter } from "./lib/types";
 import { Provider } from "jotai";
 import FileSelecter from "./components/file-selecter";
 import Costs from './components/costs';
+import Options from "./components/options";
 
 const getDataCenters = async () => {
   const URL = 'https://universalis.app/api/v2/data-centers';
@@ -20,11 +21,12 @@ const getDataCenters = async () => {
 
 export default async function Home() {
   const dataCenters = await getDataCenters();
-  
+
   return (
-    <main className="container mx-auto flex flex-col items-center px-24 grow gap-10">
+    <main className="container mx-auto flex flex-col items-center px-12 grow gap-6">
       <Provider>
         <FileSelecter dataCentersFromServer={dataCenters} />
+        <Options />
         <Costs />
       </Provider>
     </main>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { priceListAtom, makePlaceListAtom, selectedCenterAtom, unresolvedItemsAtom, makePlaceFilenameAtom, hiddenItemIdsAtom, hiddenItemIdsForFileAtom } from "../lib/jotai-store";
+import { priceListAtom, makePlaceListAtom, selectedCenterAtom, unresolvedItemsAtom, makePlaceFilenameAtom, hiddenItemIdsAtom, hiddenItemIdsForFileAtom, optionsAtom } from "../lib/jotai-store";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MakePlaceItem, PriceListItem } from "../lib/types";
 import InfoBox from "./info-box";
@@ -11,8 +11,9 @@ import { FaSort } from "react-icons/fa";
 type ResponseItem = {
   [key: string]: {
     listings: {
-        pricePerUnit: number;
-        worldName: string;
+        pricePerUnit: number,
+        worldName: string,
+        tax: number,
     }[],
   },
 };
@@ -30,9 +31,13 @@ const formatDisplayCost = (value: number) => {
 const TotalCost = () => {
   const priceList = useAtomValue(priceListAtom);
   const hiddenIds = useAtomValue(hiddenItemIdsForFileAtom);
+  const options = useAtomValue(optionsAtom);
 
   const totalCost = priceList.reduce((arr, curr) => {
-    const combinedCostForUnits = (hiddenIds.includes(curr.id)) ? 0 : curr.units.reduce((arr2, curr2) => arr2 + curr2.pricePerUnit, 0);
+    const combinedCostForUnits = (hiddenIds.includes(curr.id)) ? 0 : curr.units.reduce((arr2, curr2) => {
+      const tax = (options.includeTax) ? curr2.tax : 0;
+      return arr2 + curr2.pricePerUnit + tax;
+    }, 0);
     return arr + combinedCostForUnits;
   }, 0);
 
@@ -87,9 +92,9 @@ const PerItemCost = () => {
   const setHiddenItemIdsForFile = useSetAtom(hiddenItemIdsForFileAtom);
   const makeplaceFilename = useAtomValue(makePlaceFilenameAtom);
   const priceList = useAtomValue(priceListAtom);
+  const options = useAtomValue(optionsAtom);
   const [sortedData, setSortedData] = useState([...priceList]);
   const [sorting, setSorting] = useState({ field: 'cost', asc: false });
-  const [displayHiddenItems, setDisplayHiddenItems] = useState(false);
   const sortingRef = useRef({ field: '', asc: false });
   const hiddenIds = hiddenItemIds[makeplaceFilename] || [];
 
@@ -101,10 +106,6 @@ const PerItemCost = () => {
       hiddenItemIdsCopy.push(id);
     }
     setHiddenItemIds({...hiddenItemIds, ...{ [makeplaceFilename]: hiddenItemIdsCopy }});
-  }
-
-  const unHideAll = () => {
-    setHiddenItemIds({...hiddenItemIds, ...{ [makeplaceFilename]: [] }});
   }
 
   useEffect(() => {
@@ -142,27 +143,9 @@ const PerItemCost = () => {
   }
 
   return (
-    <div className="md:min-w-96">
+    <div className="md:min-w-72 lg:min-w-[28rem]">
       <label className="tracking-wider">Items & costs</label>
-      <div className="flex justify-between text-sm font-medium pt-3 pb-2 text-slate-500">
-        <label htmlFor="checkbox-show-hidden" className="select-none grid grid-flow-col gap-1 items-center cursor-pointer hover:text-slate-300">
-          <div className="grid items-center justify-center">
-            <input
-              type="checkbox"
-              id="checkbox-show-hidden"
-              defaultChecked={displayHiddenItems}
-              className="peer row-start-1 col-start-1 appearance-none w-4 h-4 border ring-transparent border-slate-600 rounded checked:bg-green-700 checked:border-0 forced-colors:appearance-auto"
-              onChange={(evt) => setDisplayHiddenItems(evt.target.checked)}
-            />
-            <svg viewBox="0 0 14 14" fill="none" className="invisible peer-checked:visible row-start-1 col-start-1 stroke-white dark:text-violet-300 forced-colors:hidden">
-              <path d="M3 8L6 11L11 3.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-            </svg>
-          </div>
-          Hide deselected
-        </label>
-        <button className="hover:text-slate-300" onClick={() => unHideAll()}>Reset selection</button>
-      </div>
-      <table className="table-auto mt-4 w-full">
+      <table className="table-auto mt-4 h-fit">
         <thead>
           <tr>
             <th className="text-left tracking-wider hover:text-slate-300 hover:cursor-pointer" onClick={() => setSorting({ field: 'name', asc: !sorting.asc })}>
@@ -181,8 +164,11 @@ const PerItemCost = () => {
           {
             sortedData.map((item) => {
               const textDecoration = (hiddenIds.includes(item.id)) ? 'line-through opacity-60' : '';
-              const totalCost = item.units.reduce((arr, curr) => arr + curr.pricePerUnit, 0);
-              if(displayHiddenItems && hiddenIds.includes(item.id)) {
+              const totalCost = item.units.reduce((arr, curr) => {
+                const tax = (options.includeTax) ? curr.tax : 0;
+                return arr + curr.pricePerUnit + tax;
+              }, 0);
+              if(options.hideDeselected && hiddenIds.includes(item.id)) {
                 return null;
               }
               return (
@@ -192,19 +178,23 @@ const PerItemCost = () => {
                   onClick={() => toggleHidden(item.id)}
                 >
                   <td className="pt-3 w-full">
-                    <div>
                       <div className={`text-lg font-semibold ${textDecoration}`}>{`${item.name}`}</div>
                       {
                         item.units.map((unit, idx) => (
                           <div key={idx} className={`flex justify-between text-sm ${textDecoration}`}>
                             <div className="text-slate-500">{unit.worldName}</div>
-                            <div className="pr-2 text-green-800">{formatDisplayCost(unit.pricePerUnit)}</div>
+                            <div className="pr-2 text-green-700">{formatDisplayCost(unit.pricePerUnit)}</div>
                           </div>
                         ))
                       }
-                    </div>
                   </td>
-                  <td className={`pl-10 pt-3 text-right text-lg font-bold align-top text-green-700 ${textDecoration}`}>{formatDisplayCost(totalCost)}</td>
+                  <td className={`pt-3 align-bottom text-green-700 ${textDecoration}`}>
+                      <div className="pl-10 text-right text-lg font-bold">{formatDisplayCost(totalCost)}</div>
+                      {options.includeTax && item.units.map((unit, idx) => (
+                          <div key={idx} className="text-sm text-green-900">+<span className="text-xs">{unit.tax}</span></div>
+                        ))
+                      }
+                  </td>
                 </tr>
               )
             })
@@ -223,7 +213,7 @@ const CostSummary = () => {
   }
 
   return (
-    <div className="flex flex-row space-x-6 pb-28">
+    <div className="flex flex-row space-x-6 pt-2 pb-28">
       <InfoBox>
         <PerItemCost />
       </InfoBox>

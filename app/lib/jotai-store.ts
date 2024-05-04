@@ -18,3 +18,5 @@ export const makePlaceListAtom = atom([] as MakePlaceItem[]);
 export const priceListAtom = atom([] as PriceListItem[]);
 
 export const unresolvedItemsAtom = atom([] as number[]);
+
+export const optionsAtom = atom({ includeTax: true, hideDeselected: false });

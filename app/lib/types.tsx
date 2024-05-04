@@ -16,6 +16,7 @@ export type PriceListItem = {
   units: {
     pricePerUnit: number,
     worldName: string,
+    tax: number,
   }[],
 }
 
