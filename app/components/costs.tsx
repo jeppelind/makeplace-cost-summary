@@ -1,7 +1,7 @@
 'use client'
 
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { priceListAtom, itemIdsAtom, makePlaceListAtom, selectedCenterAtom, unresolvedItemsAtom, makePlaceFilenameAtom, hiddenItemIdsAtom, hiddenItemIdsForFileAtom } from "../lib/jotai-store";
+import { priceListAtom, makePlaceListAtom, selectedCenterAtom, unresolvedItemsAtom, makePlaceFilenameAtom, hiddenItemIdsAtom, hiddenItemIdsForFileAtom } from "../lib/jotai-store";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MakePlaceItem, PriceListItem } from "../lib/types";
 import InfoBox from "./info-box";
@@ -59,12 +59,11 @@ const ItemCount = () => {
 
 const UnresolvedItems = () => {
   const unresolvedItems = useAtomValue(unresolvedItemsAtom);
-  const itemIds = useAtomValue(itemIdsAtom);
+  const makePlaceList = useAtomValue(makePlaceListAtom);
 
-  const getItemNameById = (id: string) => {
-    const itemId = id.toString();
-    const itemInfo = itemIds.find((item) => item.id === itemId);
-    return (itemInfo) ? itemInfo.en : id;
+  const getItemNameById = (id: number) => {
+    const itemInfo = makePlaceList.find((item) => item.id === id);
+    return (itemInfo) ? itemInfo.name : id;
   }
 
   if (unresolvedItems.length === 0) {
@@ -94,7 +93,7 @@ const PerItemCost = () => {
   const sortingRef = useRef({ field: '', asc: false });
   const hiddenIds = hiddenItemIds[makeplaceFilename] || [];
 
-  const toggleHidden = (id: string) => {
+  const toggleHidden = (id: number) => {
     const hiddenItemIdsCopy = [...hiddenIds]
     if (hiddenItemIdsCopy.includes(id)) {
       hiddenItemIdsCopy.splice(hiddenItemIdsCopy.findIndex((hiddenId) => hiddenId === id), 1);
@@ -156,7 +155,7 @@ const PerItemCost = () => {
               onChange={(evt) => setDisplayHiddenItems(evt.target.checked)}
             />
             <svg viewBox="0 0 14 14" fill="none" className="invisible peer-checked:visible row-start-1 col-start-1 stroke-white dark:text-violet-300 forced-colors:hidden">
-              <path d="M3 8L6 11L11 3.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M3 8L6 11L11 3.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
             </svg>
           </div>
           Hide deselected
@@ -242,7 +241,6 @@ const Costs = () => {
   const setUnresolvedItems = useSetAtom(unresolvedItemsAtom);
   const makePlaceList = useAtomValue(makePlaceListAtom);
   const selectedCenter = useAtomValue(selectedCenterAtom);
-  const itemIds = useAtomValue(itemIdsAtom);
   const [isFetching, setIsFetching] = useState(false);
 
   const buildURL = useCallback((itemList: MakePlaceItem[]) => {
@@ -260,7 +258,7 @@ const Costs = () => {
       entries: '0',
       statsWithin: '0',
       entriesWithin: '0',
-      fields: 'dcName,unresolvedItems,items.listings.pricePerUnit,items.listings.worldName',
+      fields: 'dcName,unresolvedItems,items.listings.pricePerUnit,items.listings.worldName,items.listings.tax',
     });
     return url;
   }, [selectedCenter]);
@@ -287,7 +285,7 @@ const Costs = () => {
         })
         .then((data: ResponseObject[]) => {
           const combinedData: ResponseItem = {};
-          let unresolvedItems: string[] = [];
+          let unresolvedItems: number[] = [];
           data.forEach((res) => {
             Object.assign(combinedData, res.items);
             if (res.unresolvedItems) {
@@ -297,13 +295,15 @@ const Costs = () => {
 
           const parsedCosts: PriceListItem[] = [];
           for (const [key, value] of Object.entries(combinedData)) {
-            const itemInfo = itemIds.find((item) => item.id === key);
-            const makePlaceInfo = makePlaceList.find((item) => item.id === key);
-            parsedCosts.push({
-              id: key,
-              name: itemInfo?.en || 'Unknown',
-              units: value.listings.slice(0, makePlaceInfo?.count),
-            });
+            const id = parseInt(key, 10);
+            const makePlaceInfo = makePlaceList.find((item) => item.id === id);
+            if (makePlaceInfo) {
+              parsedCosts.push({
+                id,
+                name: makePlaceInfo.name,
+                units: value.listings.slice(0, makePlaceInfo.count),
+              });
+            }
           }
           setPriceList(parsedCosts);
           setUnresolvedItems(unresolvedItems);
@@ -313,7 +313,7 @@ const Costs = () => {
         })
         .finally(() => setIsFetching(false));
     }
-  }, [makePlaceList, itemIds, setPriceList, buildURL, setUnresolvedItems]);
+  }, [makePlaceList, setPriceList, buildURL, setUnresolvedItems]);
 
   return (
     <>

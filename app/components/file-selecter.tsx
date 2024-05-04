@@ -1,16 +1,32 @@
 'use client'
 
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { DataCenter, ItemId, MakePlaceItem } from "../lib/types";
+import { DataCenter, MakePlaceItem } from "../lib/types";
 import { useHydrateAtoms } from "jotai/utils";
-import { dataCentersAtom, itemIdsAtom, makePlaceFilenameAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
+import { dataCentersAtom, makePlaceFilenameAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
 import Label from "./label";
 import { LuFileText } from "react-icons/lu";
 import { useRef } from "react";
 
 type FileSelecterProps = {
   dataCentersFromServer: DataCenter[],
-  itemIdsFromServer: ItemId[],
+}
+
+type ItemIdsFetchResonse = {
+	Pagination: {
+		Page: number,
+		PageTotal: number,
+		Results: number,
+		ResultsPerPage: number,
+		ResultsTotal: number
+	},
+	Results: [
+		{
+			ID: number,
+			Name: string
+		}
+	],
+	SpeedMs: number
 }
 
 const DataCenterDropdown = () => {
@@ -34,29 +50,61 @@ const DataCenterDropdown = () => {
 }
 
 const FileInput = () => {
-  const itemIds = useAtomValue(itemIdsAtom);
   const setMakePlaceList = useSetAtom(makePlaceListAtom);
   const setMakePlaceFilename = useSetAtom(makePlaceFilenameAtom);
 
   const parseFurnitureFromText = (text: string) => {
     const result: MakePlaceItem[] = [];
     const lines = text.split(/[\r\n]+/g);
-  
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (line.includes(':')) {
         const values = line.split(':');
-        const count = parseInt(values[1]);
-        const item = itemIds.find((item) => item.en === values[0]);
-        if (item) {
-          result.push({ count, id: item.id, name: values[0] });
-        }
+        result.push({ id: 0, name: values[0], count: parseInt(values[1]) });
       }
       else if (line.includes('  Dyes  ')) { // End when reaching "Dyes"
         return result;
       }
     }
     return result;
+  }
+
+  const getElasticSearchQuery = (parsedList: MakePlaceItem[]) => {
+    return {
+      indexes: "item",
+      columns: "ID,Name",
+      body: {
+        query: {
+          bool: {
+            should: parsedList.map((item) => ({ match: { Name_en: item.name } }))
+          }
+        },
+        from: 0,
+        size: 200
+      }
+    }
+  }
+
+  const fetchItemIds = (parsedMakePlaceList: MakePlaceItem[]) => {
+    return fetch('https://xivapi.com/search', {
+      method: 'POST',
+      body: JSON.stringify(getElasticSearchQuery(parsedMakePlaceList)),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then((data: ItemIdsFetchResonse) => {
+        data.Results.forEach((result) => {
+          const idx = parsedMakePlaceList.findIndex((item) => item.name === result.Name);
+          if (idx !== -1) {
+            parsedMakePlaceList[idx].id = result.ID;
+          }
+        });
+        return parsedMakePlaceList;
+      });
   }
 
   const readFiles = (files: FileList) => {
@@ -66,9 +114,15 @@ const FileInput = () => {
       reader.readAsText(file);
       reader.onload = () => {
         if (reader.result) {
-          const parsedList = parseFurnitureFromText(reader.result as string);
-          setMakePlaceList(parsedList);
-          setMakePlaceFilename(file.name);
+          const parsedMakePlaceList = parseFurnitureFromText(reader.result as string);
+          fetchItemIds(parsedMakePlaceList)
+            .then((parsedMakePlaceListWithIds) => {
+              setMakePlaceList(parsedMakePlaceListWithIds);
+              setMakePlaceFilename(file.name);
+            })
+            .catch((err) => {
+              console.error(err);
+            });
         }
       }
     }
@@ -97,10 +151,9 @@ const FileInput = () => {
   )
 }
 
-const FileSelecter = ({ dataCentersFromServer, itemIdsFromServer }: FileSelecterProps) => {
+const FileSelecter = ({ dataCentersFromServer }: FileSelecterProps) => {
   useHydrateAtoms([
-    [dataCentersAtom, dataCentersFromServer],
-    [itemIdsAtom, itemIdsFromServer],
+    [dataCentersAtom, dataCentersFromServer]
   ]);
 
   return (

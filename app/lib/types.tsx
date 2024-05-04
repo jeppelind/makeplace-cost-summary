@@ -4,19 +4,14 @@ export type DataCenter = {
   worlds: number[],
 }
 
-export type ItemId = {
-  id: string,
-  en: string,
-}
-
 export type MakePlaceItem = {
-  id: string,
+  id: number,
   name: string,
   count: number
 }
 
 export type PriceListItem = {
-  id: string,
+  id: number,
   name: string,
   units: {
     pricePerUnit: number,
@@ -25,5 +20,5 @@ export type PriceListItem = {
 }
 
 export type HiddenItems = {
-  [key: string]: string[],
+  [key: string]: number[],
 }

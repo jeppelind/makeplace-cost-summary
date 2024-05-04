@@ -1,5 +1,4 @@
-import { promises as fs } from 'fs';
-import { DataCenter, ItemId } from "./lib/types";
+import { DataCenter } from "./lib/types";
 import { Provider } from "jotai";
 import FileSelecter from "./components/file-selecter";
 import Costs from './components/costs';
@@ -21,13 +20,11 @@ const getDataCenters = async () => {
 
 export default async function Home() {
   const dataCenters = await getDataCenters();
-  const itemIdsFile = await fs.readFile(`${process.cwd()}/itemIds.json`, 'utf-8');
-  const itemIds: ItemId[] = JSON.parse(itemIdsFile);
-
+  
   return (
     <main className="container mx-auto flex flex-col items-center px-24 grow gap-10">
       <Provider>
-        <FileSelecter dataCentersFromServer={dataCenters} itemIdsFromServer={itemIds} />
+        <FileSelecter dataCentersFromServer={dataCenters} />
         <Costs />
       </Provider>
     </main>
