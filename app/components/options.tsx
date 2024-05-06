@@ -2,12 +2,17 @@
 
 import { useAtom, useAtomValue } from "jotai";
 import Label from "./label";
-import { hiddenItemIdsAtom, makePlaceFilenameAtom, optionsAtom } from "../lib/jotai-store";
+import { hiddenItemIdsAtom, makePlaceFilenameAtom, optionsAtom, priceListAtom } from "../lib/jotai-store";
 
 const Options = () => {
   const [options, setOptions] = useAtom(optionsAtom);
   const [hiddenItemIds, setHiddenItemIds] = useAtom(hiddenItemIdsAtom);
   const makeplaceFilename = useAtomValue(makePlaceFilenameAtom);
+  const priceList = useAtomValue(priceListAtom);
+
+  if (priceList.length === 0) {
+    return null;
+  }
 
   const setIncludeTax = (value: boolean) => {
     const newOptions = { ...options };
