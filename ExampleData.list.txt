@@ -1,0 +1,225 @@
+     Furniture     
+=====================
+Troupe Stage: 1
+Oasis Round Table: 3
+Glade Stool: 13
+Wooden Loft: 15
+Cask Rack: 3
+Glade Half Partition: 5
+White Half Partition: 3
+Imitation Trapdoor: 1
+Back Bar: 1
+Blank Glade Partition: 8
+Kitchen Hanger: 1
+Potion Rack: 1
+Pub Signboard: 1
+Sultana Portrait: 1
+Wall-mounted Pot Rack: 1
+Brick Interior Wall: 2
+Apron Rack: 1
+Bar Rack: 1
+Floating Kitchen Cabinet: 1
+Side-tied Curtain: 1
+Ashtray: 1
+Masonwork Stove: 1
+Wall Lantern: 2
+Alpine Pillar: 4
+Sultana and Flame General Portrait: 1
+Eorzean Map: 1
+Crossed Halberds: 1
+Ul'dahn Cityscape: 2
+Imitation Vault: 1
+Lalafellin Step Stool: 5
+Scattered Documents: 1
+Adventurers' Guild Aduyses: 2
+Brass Pricket: 2
+Watts's Sketches: 1
+Set of Liquor Bottles: 4
+Dish Rack: 1
+Tankard: 7
+Shipping Crate: 6
+Potted Umbrella Fig: 1
+War Chest: 1
+Wooden Cups: 1
+Alzadaal's Treasure Rug: 3
+Weighing Scale: 1
+Wine Barrel: 4
+South Seas Armchair: 1
+Manor Oven: 1
+Log Rack: 1
+Serving Barrel: 1
+Garment Rack: 1
+South Seas Couch: 1
+Small Blackboard: 1
+Medium Angler's Canvas: 2
+Small Angler's Canvas: 1
+Glade Sideboard: 2
+Serpent Storage Bench: 1
+Swag Valance: 3
+Classic Umbrella Stand: 1
+Imitation Wooden Skylight: 6
+Oasis Leaf Rug: 1
+Mahogany Screen: 1
+Round Wooden Loft: 1
+Akadaemia Prospectuses: 1
+Potted Spider Plant: 1
+Oasis Doormat: 2
+Flagstone Steps: 1
+Ink & Quill: 1
+Planter Partition: 1
+Classified Documents: 1
+White Rectangular Partition: 1
+Message Book Stand: 1
+Manor Candelabra: 2
+Glade Bench: 2
+Potted Dragon Tree: 1
+Oasis Flower Vase: 1
+Candlelit Sundries: 1
+Wooden Beam: 4
+Gridanian Bouquet: 1
+Hingan Bookshelf: 1
+Glade Cartonnier: 2
+Assorted Candles: 1
+Riviera Doormat: 1
+Glade Pillar: 1
+Oasis Open-shelf Bookcase: 1
+Astrologicum Star Map: 1
+Oasis Dining Table: 1
+Zabuton Cushion: 1
+Grilled Eel Set: 2
+Dishware: 1
+Oriental Sushi Lunch: 1
+Pot of Cream Stew: 1
+Sake Set: 1
+Oriental Rice Ball Lunch: 1
+Riviera Supper: 1
+Spirits Collection: 1
+Shakshouka Pot: 1
+Potted Maguey: 1
+The Bismarck: 1
+Red Brick Counter: 2
+Glade Floor Lamp: 1
+Glade Lantern: 2
+Flagstone Loft: 1
+Botanist's Dried Herbs: 1
+Glade Partition Door: 2
+
+        Dyes        
+=====================
+Ash Grey: 3
+Chestnut Brown: 12
+Chocolate Brown: 1
+Goobbue Grey: 1
+Mesa Red: 2
+Mole Brown: 1
+Orchard Brown: 18
+Rust Red: 1
+
+Furniture (With Dye)
+=====================
+Adventurers' Guild Aduyses: 2
+Akadaemia Prospectuses: 1
+Alpine Pillar: 4
+Alzadaal's Treasure Rug: 1
+Alzadaal's Treasure Rug (Chocolate Brown): 1
+Alzadaal's Treasure Rug (Mesa Red): 1
+Apron Rack: 1
+Ashtray: 1
+Assorted Candles: 1
+Astrologicum Star Map: 1
+Back Bar: 1
+Bar Rack: 1
+Blank Glade Partition: 8
+Botanist's Dried Herbs: 1
+Brass Pricket: 2
+Brick Interior Wall: 2
+Candlelit Sundries: 1
+Cask Rack: 3
+Classic Umbrella Stand: 1
+Classified Documents: 1
+Crossed Halberds: 1
+Dish Rack: 1
+Dishware: 1
+Eorzean Map: 1
+Flagstone Loft: 1
+Flagstone Steps (Goobbue Grey): 1
+Floating Kitchen Cabinet: 1
+Garment Rack: 1
+Glade Bench: 2
+Glade Cartonnier (Orchard Brown): 2
+Glade Floor Lamp: 1
+Glade Half Partition: 5
+Glade Lantern: 2
+Glade Partition Door: 2
+Glade Pillar: 1
+Glade Sideboard: 2
+Glade Stool: 13
+Gridanian Bouquet: 1
+Grilled Eel Set: 2
+Hingan Bookshelf: 1
+Imitation Trapdoor (Orchard Brown): 1
+Imitation Vault: 1
+Imitation Wooden Skylight (Chestnut Brown): 6
+Ink & Quill: 1
+Kitchen Hanger: 1
+Lalafellin Step Stool: 5
+Log Rack: 1
+Mahogany Screen: 1
+Manor Candelabra: 2
+Manor Oven: 1
+Masonwork Stove: 1
+Medium Angler's Canvas: 2
+Message Book Stand: 1
+Oasis Dining Table: 1
+Oasis Doormat: 2
+Oasis Flower Vase: 1
+Oasis Leaf Rug: 1
+Oasis Open-shelf Bookcase: 1
+Oasis Round Table: 3
+Oriental Rice Ball Lunch: 1
+Oriental Sushi Lunch: 1
+Planter Partition: 1
+Pot of Cream Stew: 1
+Potion Rack: 1
+Potted Dragon Tree: 1
+Potted Maguey: 1
+Potted Spider Plant: 1
+Potted Umbrella Fig: 1
+Pub Signboard: 1
+Red Brick Counter: 2
+Riviera Doormat: 1
+Riviera Supper: 1
+Round Wooden Loft (Orchard Brown): 1
+Sake Set: 1
+Scattered Documents: 1
+Serpent Storage Bench: 1
+Serving Barrel: 1
+Set of Liquor Bottles: 4
+Shakshouka Pot: 1
+Shipping Crate: 6
+Side-tied Curtain (Rust Red): 1
+Small Angler's Canvas: 1
+Small Blackboard: 1
+South Seas Armchair: 1
+South Seas Couch: 1
+Spirits Collection: 1
+Sultana Portrait: 1
+Sultana and Flame General Portrait: 1
+Swag Valance: 3
+Tankard: 7
+The Bismarck: 1
+Troupe Stage (Orchard Brown): 1
+Ul'dahn Cityscape: 2
+Wall Lantern: 2
+Wall-mounted Pot Rack: 1
+War Chest: 1
+Watts's Sketches: 1
+Weighing Scale: 1
+White Half Partition (Ash Grey): 3
+White Rectangular Partition (Mole Brown): 1
+Wine Barrel: 4
+Wooden Beam (Chestnut Brown): 4
+Wooden Cups: 1
+Wooden Loft (Chestnut Brown): 2
+Wooden Loft (Orchard Brown): 13
+Zabuton Cushion (Mesa Red): 1
