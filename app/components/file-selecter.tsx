@@ -6,7 +6,8 @@ import { useHydrateAtoms } from "jotai/utils";
 import { dataCentersAtom, makePlaceFilenameAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
 import Label from "./label";
 import { LuFileText } from "react-icons/lu";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import Loader from "./loader";
 
 type FileSelecterProps = {
   dataCentersFromServer: DataCenter[],
@@ -63,7 +64,7 @@ const DataCenterDropdown = () => {
   )
 }
 
-const FileInput = () => {
+const FileInput = ({ setIsFetching }: { setIsFetching: React.Dispatch<React.SetStateAction<boolean>> }) => {
   const setMakePlaceList = useSetAtom(makePlaceListAtom);
   const setMakePlaceFilename = useSetAtom(makePlaceFilenameAtom);
 
@@ -100,11 +101,12 @@ const FileInput = () => {
   }
 
   const getSearchQueryURL = (parsedList: MakePlaceItem[]) => {
-    let url = 'https://beta.xivapi.com/api/1/search?sheets=Item&limit=200&fields=Name&query=';
+    let baseUrl = 'https://beta.xivapi.com/api/1/search?sheets=Item&limit=200&fields=Name&query=';
+    let itemsString = '';
     parsedList.forEach((item, idx) => {
-      url += (idx === 0) ? `Name="${item.name}"` : ` +Name="${item.name}"`;
+      itemsString += (idx === 0) ? `Name="${item.name}"` : ` +Name="${item.name}"`;
     });
-    return encodeURI(url);
+    return encodeURI(baseUrl + itemsString.replaceAll('&', '%26'));
   }
 
   const fetchItemIds = (parsedMakePlaceList: MakePlaceItem[]) => {
@@ -113,7 +115,7 @@ const FileInput = () => {
     //   method: 'POST',
     //   body: JSON.stringify(getElasticSearchQuery(parsedMakePlaceList)),
     // })
-
+    
     return fetch(getSearchQueryURL(parsedMakePlaceList))
       .then((response) => {
         if (!response.ok) {
@@ -140,6 +142,7 @@ const FileInput = () => {
       reader.onload = () => {
         if (reader.result) {
           const parsedMakePlaceList = parseFurnitureFromText(reader.result as string);
+          setIsFetching(true);
           fetchItemIds(parsedMakePlaceList)
             .then((parsedMakePlaceListWithIds) => {
               setMakePlaceList(parsedMakePlaceListWithIds);
@@ -147,7 +150,8 @@ const FileInput = () => {
             })
             .catch((err) => {
               console.error(err);
-            });
+            })
+            .finally(() => setIsFetching(false));
         }
       }
     }
@@ -180,19 +184,27 @@ const FileSelecter = ({ dataCentersFromServer }: FileSelecterProps) => {
   useHydrateAtoms([
     [dataCentersAtom, dataCentersFromServer]
   ]);
-
+  const [isFetching, setIsFetching] = useState(false);
+  
   return (
-    <div>
-      <div className="flex flex-row justify-center gap-2">
-        <DataCenterDropdown />
-        <FileInput />
+    <>
+      <div>
+        <div className="flex flex-row justify-center gap-2">
+          <DataCenterDropdown />
+          <FileInput setIsFetching={setIsFetching} />
+        </div>
+        <p className="text-sm text-slate-500 pt-4">
+          <span className="font-bold">Instructions:</span> Select a MakePlace save file (located in the folder &quot;../MakePlace/Save/&quot; by default).<br />
+          Once the items are loaded below you can toggle whether they should be included in the total cost by clicking on them.<br />
+          Problems? Blame Totono.
+        </p>
+        
       </div>
-      <p className="text-sm text-slate-500 pt-4">
-        <span className="font-bold">Instructions:</span> Select a MakePlace save file (located in the folder &quot;../MakePlace/Save/&quot; by default).<br />
-        Once the items are loaded below you can toggle whether they should be included in the total cost by clicking on them.<br />
-        Problems? Blame Totono.
-      </p>
-    </div>
+      {
+        isFetching &&
+          <Loader />
+      }
+    </>
   );
 }
 
