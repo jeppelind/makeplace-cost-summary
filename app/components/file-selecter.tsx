@@ -12,6 +12,7 @@ type FileSelecterProps = {
   dataCentersFromServer: DataCenter[],
 }
 
+// For xivapi.com
 type ItemIdsFetchResonse = {
 	Pagination: {
 		Page: number,
@@ -27,6 +28,19 @@ type ItemIdsFetchResonse = {
 		}
 	],
 	SpeedMs: number
+}
+
+// For beta.xivapi.com
+type ItemIdsFetchResonseBeta = {
+	schema: string,
+  results: [
+    {
+      row_id: number,
+      fields: {
+        Name: string,
+      }
+    }
+  ]
 }
 
 const DataCenterDropdown = () => {
@@ -85,22 +99,33 @@ const FileInput = () => {
     }
   }
 
+  const getSearchQueryURL = (parsedList: MakePlaceItem[]) => {
+    let url = 'https://beta.xivapi.com/api/1/search?sheets=Item&limit=200&fields=Name&query=';
+    parsedList.forEach((item, idx) => {
+      url += (idx === 0) ? `Name="${item.name}"` : ` +Name="${item.name}"`;
+    });
+    return encodeURI(url);
+  }
+
   const fetchItemIds = (parsedMakePlaceList: MakePlaceItem[]) => {
-    return fetch('https://xivapi.com/search', {
-      method: 'POST',
-      body: JSON.stringify(getElasticSearchQuery(parsedMakePlaceList)),
-    })
+    // xivapi.com API depriecated, using beta.xivapi.com instead
+    // return fetch('https://xivapi.com/search', {
+    //   method: 'POST',
+    //   body: JSON.stringify(getElasticSearchQuery(parsedMakePlaceList)),
+    // })
+
+    return fetch(getSearchQueryURL(parsedMakePlaceList))
       .then((response) => {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
         return response.json();
       })
-      .then((data: ItemIdsFetchResonse) => {
-        data.Results.forEach((result) => {
-          const idx = parsedMakePlaceList.findIndex((item) => item.name === result.Name);
+      .then((data: ItemIdsFetchResonseBeta) => {
+        data.results.forEach((result) => {
+          const idx = parsedMakePlaceList.findIndex((item) => item.name === result.fields.Name);
           if (idx !== -1) {
-            parsedMakePlaceList[idx].id = result.ID;
+            parsedMakePlaceList[idx].id = result.row_id;
           }
         });
         return parsedMakePlaceList;
