@@ -7,6 +7,7 @@ import { MakePlaceItem, PriceListItem } from "../lib/types";
 import InfoBox from "./info-box";
 import Loader from "./loader";
 import { FaSort } from "react-icons/fa";
+import Share from "./share";
 
 type ResponseItem = {
   [key: string]: {
@@ -221,6 +222,9 @@ const CostSummary = () => {
         <TotalCost />
         <ItemCount />
         <UnresolvedItems />
+        <InfoBox>
+          <Share />
+        </InfoBox>
       </div>
     </div>
   )

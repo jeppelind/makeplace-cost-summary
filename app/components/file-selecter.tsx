@@ -6,11 +6,12 @@ import { useHydrateAtoms } from "jotai/utils";
 import { dataCentersAtom, makePlaceFilenameAtom, makePlaceListAtom, selectedCenterAtom } from "../lib/jotai-store";
 import Label from "./label";
 import { LuFileText } from "react-icons/lu";
-import { useRef, useState } from "react";
+import { use, useRef, useState } from "react";
 import Loader from "./loader";
+import { useParams } from "next/navigation";
 
 type FileSelecterProps = {
-  dataCentersFromServer: DataCenter[],
+  dataCentersFromServer: Promise<DataCenter[]>,
 }
 
 // For xivapi.com
@@ -181,8 +182,9 @@ const FileInput = ({ setIsFetching }: { setIsFetching: React.Dispatch<React.SetS
 }
 
 const FileSelecter = ({ dataCentersFromServer }: FileSelecterProps) => {
+  const dataCenters = use(dataCentersFromServer)
   useHydrateAtoms([
-    [dataCentersAtom, dataCentersFromServer]
+    [dataCentersAtom, dataCenters]
   ]);
   const [isFetching, setIsFetching] = useState(false);
   

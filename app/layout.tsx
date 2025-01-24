@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Suspense } from "react";
-import Loader from "./components/loader";
 import { LiaCoinsSolid } from "react-icons/lia";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -11,12 +9,6 @@ export const metadata: Metadata = {
   title: "MakePlace Cost Summary",
   description: "Get FFXIV marketboard prices from MakePlace files",
 };
-
-const Loading = () => (
-  <div className="flex flex-col items-center grow">
-    <Loader />
-  </div>
-)
 
 export default function RootLayout({
   children,
@@ -31,9 +23,7 @@ export default function RootLayout({
             <LiaCoinsSolid />MakePlace Cost Summary
           </div>
         </div>
-        <Suspense fallback={<Loading />}>
-          {children}
-        </Suspense>
+        {children}
       </body>
     </html>
   );
