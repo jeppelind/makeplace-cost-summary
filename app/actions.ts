@@ -4,7 +4,7 @@ import { MongoClient } from "mongodb";
 import { nanoid } from "nanoid";
 import { MakePlaceItem } from "./lib/types";
 
-type ItemList = {
+export type ItemList = {
   key: string;
   dataCenter: string;
   items: MakePlaceItem[];
@@ -41,7 +41,6 @@ export const findItemList = async (key: string) => {
       }
     );
     await client.close();
-    console.log(`Fetched from DBo ${Date.now().toString()}`);
     return itemList;
   } catch (error) {
     console.error(error)

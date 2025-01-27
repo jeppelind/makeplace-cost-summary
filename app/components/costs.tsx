@@ -7,7 +7,6 @@ import { MakePlaceItem, PriceListItem } from "../lib/types";
 import InfoBox from "./info-box";
 import Loader from "./loader";
 import { FaSort } from "react-icons/fa";
-import Share from "./share";
 
 type ResponseItem = {
   [key: string]: {
@@ -189,7 +188,7 @@ const PerItemCost = () => {
                         ))
                       }
                   </td>
-                  <td className={`pt-3 align-bottom text-green-700 ${textDecoration}`}>
+                  <td className={`pt-3 align-baseline text-green-700 ${textDecoration}`}>
                       <div className="pl-10 text-right text-lg font-bold">{formatDisplayCost(totalCost)}</div>
                       {options.includeTax && item.units.map((unit, idx) => (
                           <div key={idx} className="text-sm text-green-900">+<span className="text-xs">{unit.tax}</span></div>
@@ -214,17 +213,19 @@ const CostSummary = () => {
   }
 
   return (
-    <div className="flex flex-row space-x-6 pt-2 pb-28">
-      <InfoBox>
-        <PerItemCost />
-      </InfoBox>
-      <div className="space-y-6">
+    <div className="flex flex-col md:flex-row pt-2 pb-28 gap-6">
+      <div className="visible md:hidden">
+        <TotalCost />
+      </div>
+      <div>
+        <InfoBox>
+          <PerItemCost />
+        </InfoBox>
+      </div>
+      <div className="flex flex-col gap-6">
         <TotalCost />
         <ItemCount />
         <UnresolvedItems />
-        <InfoBox>
-          <Share />
-        </InfoBox>
       </div>
     </div>
   )

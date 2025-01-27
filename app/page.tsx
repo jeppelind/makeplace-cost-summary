@@ -25,11 +25,11 @@ export default async function Home() {
   const dataCenters = getDataCenters();
 
   return (
-    <main className="container mx-auto flex flex-col items-center px-12 grow gap-6">
+    <main className="container mx-auto flex flex-col items-center px-4 md:px-12 grow gap-6">
       <Suspense fallback={<Loader />}>
         <Provider>
           <FileSelecter dataCentersFromServer={dataCenters} />
-          <Options />
+          <Options showAdvanced={true} />
           <Costs />
         </Provider>
       </Suspense>
